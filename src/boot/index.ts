@@ -99,8 +99,14 @@ export default async function boot(): Promise<Context> {
 
     const settings = await settings_read(context);
 
-    config.hubContentTypesEndpoint = settings.hub_content_types_endpoint;
-    config.hubRegistrationEndpoint = settings.hub_registration_endpoint;
+    // Only override the hard-coded H5PConfig defaults when a non-empty endpoint
+    // is configured, so a missing or blank setting can never break the hub.
+    if (settings.hub_content_types_endpoint) {
+      config.hubContentTypesEndpoint = settings.hub_content_types_endpoint;
+    }
+    if (settings.hub_registration_endpoint) {
+      config.hubRegistrationEndpoint = settings.hub_registration_endpoint;
+    }
 
     const h5pEditor = await boot_h5p_editor(
       config,
