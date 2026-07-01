@@ -2,7 +2,11 @@ module.exports = {
   appId: 'education.lumi.lumi',
   productName: 'Lumi',
   asar: true,
-  asarUnpack: ['assets/h5p/libraries/**'],
+  // The H5P HTML/SCORM exporter reads the core, editor and library assets from
+  // the real filesystem while bundling. Keep all of assets/h5p unpacked from the
+  // asar archive so those reads work in packaged builds (previously only
+  // libraries were unpacked, which could break the export).
+  asarUnpack: ['assets/h5p/**'],
   icon: 'assets/lumi.icns',
   files: [
     'build/**/*',

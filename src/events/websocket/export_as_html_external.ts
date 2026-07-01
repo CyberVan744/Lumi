@@ -17,8 +17,8 @@ export default function event_websocket_export_as_html_external(
 
     const { file_path } = await dialog_export_save_as_show(
       context.translate('Export as HTML with external media files'),
-      '.html',
-      ['.html']
+      'HTML',
+      ['html']
     );
 
     if (!file_path) {
@@ -27,19 +27,36 @@ export default function event_websocket_export_as_html_external(
 
     await window_backdrop_show(context, contentId);
 
-    await content_export_as_html_external(
-      context,
-      contentId,
-      file_path,
-      options
-    );
+    try {
+      await content_export_as_html_external(
+        context,
+        contentId,
+        file_path,
+        options
+      );
 
-    await window_backdrop_hide(context, contentId);
-    await window_snackbar_show(
-      context,
-      contentId,
-      context.translate(`Content exported to {{file_path}}`, { file_path }),
-      'success'
-    );
+      await window_snackbar_show(
+        context,
+        contentId,
+        context.translate(`Content exported to {{file_path}}`, { file_path }),
+        'success'
+      );
+    } catch (error) {
+      context.log.error('events:websocket:export_as_html_external failed', {
+        contentId,
+        file_path,
+        error
+      });
+      await window_snackbar_show(
+        context,
+        contentId,
+        context.translate(`Export failed: {{message}}`, {
+          message: error instanceof Error ? error.message : String(error)
+        }),
+        'error'
+      );
+    } finally {
+      await window_backdrop_hide(context, contentId);
+    }
   });
 }
