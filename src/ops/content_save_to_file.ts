@@ -17,7 +17,10 @@ export default async function content_save_to_file(
     path: filePath
   });
 
-  const tempPath = path.join(path.dirname(filePath),`.${path.basename(filePath)}.${Date.now()}.tmp`);
+  const tempPath = path.join(
+    path.dirname(filePath),
+    `.${path.basename(filePath)}.${Date.now()}.tmp`
+  );
   const stream = fs.createWriteStream(tempPath);
   const streamFinished = finished(stream);
   const packageExporter = new H5P.PackageExporter(
