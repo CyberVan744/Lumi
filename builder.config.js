@@ -1,6 +1,11 @@
 module.exports = {
   appId: 'education.lumi.lumi',
   productName: 'Lumi',
+  // Lumi has no native addons that need rebuilding against Electron's ABI. The
+  // only "native" module is bunyan's optional dtrace-provider (a no-op on
+  // Windows), whose node-gyp rebuild fails on newer CI runners whose Visual
+  // Studio the bundled node-gyp cannot detect. Skip the rebuild entirely.
+  npmRebuild: false,
   asar: true,
   // The H5P HTML/SCORM exporter reads the core, editor and library assets from
   // the real filesystem while bundling. Keep all of assets/h5p unpacked from the
