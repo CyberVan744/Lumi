@@ -1,0 +1,42 @@
+diff --git a/node_modules/@lumieducation/h5p-html-exporter/build/HtmlExporter.js b/node_modules/@lumieducation/h5p-html-exporter/build/HtmlExporter.js
+index 2885343..41af5b4 100644
+--- a/node_modules/@lumieducation/h5p-html-exporter/build/HtmlExporter.js
++++ b/node_modules/@lumieducation/h5p-html-exporter/build/HtmlExporter.js
+@@ -528,7 +528,12 @@ var HtmlExporter = /** @class */ (function () {
+                         scripts = model.scripts
+                             .map(function (script) { return texts[script]; })
+                             .concat(additionalScripts);
+-                        return [2 /*return*/, uglify_js_1.default.minify(scripts, { output: { comments: 'some' } }).code];
++                        var minified = uglify_js_1.default.minify(scripts, { output: { comments: 'some' } });
++                        // uglify-js returns { error, code: undefined } (it does NOT throw) when it
++                        // cannot parse a script, e.g. a library using strict-mode-illegal `delete`.
++                        // Fall back to unminified concatenation so a single bad library can never
++                        // silently break the whole export (see H5P.Video echo360.js).
++                        return [2 /*return*/, (minified.error || minified.code === undefined) ? scripts.join('\n;\n') : minified.code];
+                 }
+             });
+         });
+@@ -599,8 +604,12 @@ var HtmlExporter = /** @class */ (function () {
+                                                         // in the filename here, as it's only used
+                                                         // to determine the file's parent directory.
+                                                         filename, library, editor, core, usedFiles)
+-                                                    }),
+-                                                    (0, postcss_clean_1.default)()
++                                                    })
++                                                    // postcss-clean (clean-css 4.2.4) removed: it
++                                                    // silently drops valid modern CSS rules (e.g.
++                                                    // H5P.GameMap's .h5p-game-map-stage positioning
++                                                    // rule, breaking markers). CSS stays unminified
++                                                    // but correct.
+                                                 ]
+                                             }), (0, postCssRemoveRedundantFontUrls_1.default)(undefined, library
+                                                 ? function (f) {
+@@ -608,7 +617,7 @@ var HtmlExporter = /** @class */ (function () {
+                                                 }
+                                                 : undefined), (0, postcss_url_1.default)({
+                                                 url: this.urlInternalizer(filename, library, editor, core, usedFiles)
+-                                            }), (0, postcss_clean_1.default)());
++                                            }));
+                                             _d.label = 3;
+                                         case 3:
+                                             _d.trys.push([3, , 11, 12]);
